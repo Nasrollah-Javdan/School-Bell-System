@@ -1,0 +1,56 @@
+{
+  "name": "school-bell-system",
+  "productName": "School Bell System",
+  "version": "2.2.0",
+  "description": "A desktop program that plays school bell sounds automatically at scheduled times.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "test": "node --test",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "dist": "electron-builder --win --publish never"
+  },
+  "author": "Dandelion System",
+  "license": "Freeware",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.dandelionsystem.schoolbell",
+    "productName": "School Bell System",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "School Bell System"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**",
+      "shared/**",
+      "sound/**",
+      "build/icon.png",
+      "!**/*.map",
+      "!**/{.git,.github,test,docs,src,wiki}/**"
+    ]
+  },
+  "allowScripts": {
+    "electron@28.3.3": true
+  }
+}

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src bellsound:; font-src 'self'; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام زنگ مدرسه</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="light">
+
+<!-- ───────────────────────────── icon sprite ───────────────────────────── -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M12 2a6 6 0 0 0-6 6v3.6l-1.6 3.2A1 1 0 0 0 5.3 16h13.4a1 1 0 0 0 .9-1.2L18 11.6V8a6 6 0 0 0-6-6Zm0 20a3 3 0 0 0 2.8-2H9.2A3 3 0 0 0 12 22Z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5V3Zm3 2v5h8V5H8Zm4 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7L8 5Z"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4l1-2ZM6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8Z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="m12 10.6 4.9-4.9 1.4 1.4-4.9 4.9 4.9 4.9-1.4 1.4-4.9-4.9-4.9 4.9-1.4-1.4 4.9-4.9-4.9-4.9 1.4-1.4 4.9 4.9Z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><path d="M12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-15h0v3h0V2Zm0 17v3m10-10h-3m-14 0H2m17.07-7.07-2.12 2.12M7.05 16.95l-2.12 2.12m14.14 0-2.12-2.12M7.05 7.05 4.93 4.93" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 14.5A8.5 8.5 0 0 1 9.5 3a8.5 8.5 0 1 0 11.5 11.5Z"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm9 4a9 9 0 0 0-.2-1.9l2-1.5-2-3.4-2.3 1a9 9 0 0 0-3.3-1.9L15 2H9l-.2 2.3A9 9 0 0 0 5.5 6.2l-2.3-1-2 3.4 2 1.5A9 9 0 0 0 3 12c0 .6.1 1.3.2 1.9l-2 1.5 2 3.4 2.3-1a9 9 0 0 0 3.3 1.9L9 22h6l.2-2.3a9 9 0 0 0 3.3-1.9l2.3 1 2-3.4-2-1.5c.1-.6.2-1.3.2-1.9Z"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm.1 15.5a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Zm1.9-5.1c-.6.5-1 .9-1 1.6h-1.9c0-1.4.6-2.1 1.4-2.8.6-.5 1-.9 1-1.6 0-.8-.6-1.3-1.5-1.3-.9 0-1.5.5-1.8 1.4l-1.8-.8C8.9 7.6 10.1 6.6 12 6.6c2 0 3.4 1.2 3.4 2.9 0 1.3-.7 2-1.4 2.9Z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M11 3h2v9l3.5-3.5 1.4 1.4L12 16.8 6.1 9.9l1.4-1.4L11 12V3ZM5 19h14v2H5v-2Z"/></symbol>
+  <symbol id="i-open" viewBox="0 0 24 24"><path d="M3 5h6l2 2h10v12H3V5Zm2 2v10h14V9h-8.8L8.4 7H5Z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m9.6 17.2-4.9-4.9 1.4-1.4 3.5 3.5 8.3-8.3 1.4 1.4-9.7 9.7Z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 5v5.4l4 2.3-1 1.7-5-2.9V7h2Z"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 2 1 21h22L12 2Zm1 14h-2v2h2v-2Zm0-7h-2v5h2V9Z"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4V9Zm12.5-1.4a6 6 0 0 1 0 8.8l-1.4-1.4a4 4 0 0 0 0-6l1.4-1.4Z"/></symbol>
+</svg>
+
+<!-- ───────────────────────────── app shell ───────────────────────────── -->
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark"><svg><use href="#i-bell"/></svg></span>
+      <div class="brand-text">
+        <strong>نظام زنگ مدرسه</strong>
+        <span id="brand-sub">برنامه‌ریز هفتگی</span>
+      </div>
+    </div>
+
+    <nav class="day-list" id="day-list" aria-label="روزهای هفته"></nav>
+
+    <div class="sidebar-foot">
+      <div class="today" id="today-box">
+        <svg class="ico"><use href="#i-clock"/></svg>
+        <div>
+          <span class="today-label">امروز</span>
+          <strong id="today-name">—</strong>
+        </div>
+      </div>
+      <button class="ghost-btn" id="btn-settings" type="button">
+        <svg class="ico"><use href="#i-settings"/></svg><span>تنظیمات</span>
+      </button>
+      <button class="ghost-btn" id="btn-help" type="button">
+        <svg class="ico"><use href="#i-help"/></svg><span>راهنما</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1 id="day-title">شنبه</h1>
+        <p id="day-subtitle" class="muted">برنامهٔ اختصاصی این روز</p>
+      </div>
+
+      <div class="topbar-actions">
+        <label class="field compact" for="schedule-type">
+          <span>نوع برنامه</span>
+          <select id="schedule-type" class="select"></select>
+        </label>
+
+        <button class="btn btn-ghost" id="btn-theme" type="button" title="تغییر تم">
+          <svg class="ico"><use href="#i-moon"/></svg>
+          <span class="sr-only">تغییر تم</span>
+        </button>
+        <button class="btn btn-ghost" id="btn-open" type="button" title="باز کردن فایل برنامه‌ریزی">
+          <svg class="ico"><use href="#i-open"/></svg>
+          <span class="btn-label">باز کردن</span>
+        </button>
+        <button class="btn btn-primary" id="btn-save" type="button">
+          <svg class="ico"><use href="#i-save"/></svg>
+          <span class="btn-label">ذخیره</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="board" aria-labelledby="day-title">
+      <div class="board-toolbar">
+        <button class="btn btn-soft" id="btn-add" type="button">
+          <svg class="ico"><use href="#i-plus"/></svg>
+          <span>افزودن نوبت</span>
+        </button>
+        <button class="btn btn-soft" id="btn-import" type="button">
+          <svg class="ico"><use href="#i-download"/></svg>
+          <span>وارد کردن صدا</span>
+        </button>
+        <div class="spacer"></div>
+        <div class="chip" id="chip-count">۰ نوبت</div>
+        <div class="chip chip-warn" id="chip-dupes" hidden>
+          <svg class="ico"><use href="#i-warn"/></svg><span id="chip-dupes-text"></span>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="schedule" id="schedule-table">
+          <thead>
+            <tr>
+              <th class="col-time">ساعت</th>
+              <th class="col-sound">صدای زنگ</th>
+              <th class="col-actions">عملیات</th>
+            </tr>
+          </thead>
+          <tbody id="schedule-body"></tbody>
+        </table>
+
+        <div class="empty-state" id="empty-state" hidden>
+          <svg class="empty-ico"><use href="#i-bell"/></svg>
+          <h2>هنوز نوبتی برای این روز تعریف نشده</h2>
+          <p>با دکمهٔ «افزودن نوبت» اولین زنگ روز را اضافه کنید. می‌توانید برای هر نوبت یک فایل صدا انتخاب کنید.</p>
+          <button class="btn btn-primary" id="btn-add-empty" type="button">
+            <svg class="ico"><use href="#i-plus"/></svg><span>افزودن نوبت</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="statusbar">
+      <div class="status-item" id="status-file" title="فایل برنامه‌ریزی">
+        <svg class="ico"><use href="#i-save"/></svg><span>در حال بارگذاری…</span>
+      </div>
+      <div class="status-item" id="status-next" title="زنگ بعدی">
+        <svg class="ico"><use href="#i-clock"/></svg><span>—</span>
+      </div>
+      <div class="status-item status-msg" id="status-msg" role="status" aria-live="polite"></div>
+    </footer>
+  </main>
+</div>
+
+<!-- ───────────────────────────── sound picker ───────────────────────────── -->
+<div class="modal" id="modal-sound" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="sound-title">
+    <header class="modal-head">
+      <h2 id="sound-title">انتخاب فایل صدا</h2>
+      <button class="icon-btn" type="button" data-close aria-label="بستن"><svg class="ico"><use href="#i-x"/></svg></button>
+    </header>
+    <div class="modal-body">
+      <div class="modal-toolbar">
+        <button class="btn btn-soft btn-sm" id="btn-sound-import" type="button">
+          <svg class="ico"><use href="#i-download"/></svg><span>وارد کردن صدا</span>
+        </button>
+        <button class="btn btn-soft btn-sm" id="btn-sound-folder" type="button">
+          <svg class="ico"><use href="#i-folder"/></svg><span>پوشهٔ صداها</span>
+        </button>
+        <div class="spacer"></div>
+        <input class="input" id="sound-search" type="search" placeholder="جستجوی نام فایل…" aria-label="جستجوی صدا">
+      </div>
+      <ul class="sound-list" id="sound-list"></ul>
+      <p class="hint" id="sound-hint">روی یک فایل دوبار کلیک کنید یا آن را انتخاب و «انتخاب» را بزنید.</p>
+    </div>
+    <footer class="modal-foot">
+      <button class="btn btn-ghost" type="button" data-close>لغو</button>
+      <button class="btn btn-primary" id="btn-sound-choose" type="button" disabled>
+        <svg class="ico"><use href="#i-check"/></svg><span>انتخاب</span>
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- ───────────────────────────── settings ───────────────────────────── -->
+<div class="modal" id="modal-settings" hidden>
+  <div class="modal-card narrow" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <header class="modal-head">
+      <h2 id="settings-title">تنظیمات</h2>
+      <button class="icon-btn" type="button" data-close aria-label="بستن"><svg class="ico"><use href="#i-x"/></svg></button>
+    </header>
+    <div class="modal-body">
+      <div class="setting-row">
+        <div>
+          <strong>تم ظاهری</strong>
+          <p class="muted">روشن، تیره یا هماهنگ با سیستم.</p>
+        </div>
+        <div class="segmented" id="theme-seg" role="group" aria-label="تم">
+          <button type="button" data-theme-value="light">روشن</button>
+          <button type="button" data-theme-value="dark">تیره</button>
+          <button type="button" data-theme-value="system">سیستم</button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <strong>صدای پیش‌نمایش</strong>
+          <p class="muted">بلندی صدا هنگام پخش آزمایشی.</p>
+        </div>
+        <div class="range-wrap">
+          <svg class="ico"><use href="#i-volume"/></svg>
+          <input type="range" id="volume" min="0" max="100" step="5" value="90" aria-label="بلندی صدا">
+          <span id="volume-value" class="mono">۹۰٪</span>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <strong>اجرا هنگام روشن شدن ویندوز</strong>
+          <p class="muted">برنامه در سینی سیستم اجرا می‌شود تا زنگ‌ها از دست نروند.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="open-at-login">
+          <span class="switch-track"></span>
+        </label>
+      </div>
+
+      <div class="setting-row column">
+        <strong>پوشهٔ داده‌ها</strong>
+        <p class="muted mono small" id="data-path">—</p>
+        <p class="muted small">برنامه‌ریزی و صداهای وارد‌شده اینجا ذخیره می‌شوند. برای پشتیبان‌گیری همین پوشه را کپی کنید.</p>
+      </div>
+    </div>
+    <footer class="modal-foot">
+      <button class="btn btn-primary" type="button" data-close>بستن</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ───────────────────────────── help ───────────────────────────── -->
+<div class="modal" id="modal-help" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <header class="modal-head">
+      <h2 id="help-title">راهنمای سریع</h2>
+      <button class="icon-btn" type="button" data-close aria-label="بستن"><svg class="ico"><use href="#i-x"/></svg></button>
+    </header>
+    <div class="modal-body prose">
+      <ol>
+        <li>روز هفته را از ستون کنار انتخاب کنید.</li>
+        <li>با «افزودن نوبت» یک ردیف بسازید و ساعت را وارد کنید (مثلاً <code>07:30</code>).</li>
+        <li>روی آیکن پوشه بزنید و صدای زنگ را انتخاب کنید.</li>
+        <li>در پایان «ذخیره» را بزنید. برنامه تا وقتی باز است زنگ‌ها را پخش می‌کند.</li>
+      </ol>
+      <h3>میان‌بُرها</h3>
+      <ul class="keys">
+        <li><kbd>Ctrl</kbd>+<kbd>S</kbd> ذخیره</li>
+        <li><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> ذخیره به نام</li>
+        <li><kbd>Ctrl</kbd>+<kbd>O</kbd> باز کردن فایل برنامه‌ریزی</li>
+        <li><kbd>Ctrl</kbd>+<kbd>N</kbd> افزودن نوبت</li>
+        <li><kbd>Ctrl</kbd>+<kbd>F</kbd> انتخاب فایل صدا</li>
+        <li><kbd>Ctrl</kbd>+<kbd>W</kbd> پنهان کردن پنجره در سینی سیستم</li>
+        <li><kbd>Esc</kbd> بستن پنجره‌ها</li>
+      </ul>
+      <h3>نکته‌ها</h3>
+      <ul>
+        <li>ساعت‌ها به وقت محلی همین رایانه پخش می‌شوند.</li>
+        <li>اگر رایانه در زمان زنگ خاموش یا در خواب باشد، آن زنگ پخش نمی‌شود.</li>
+        <li>«استفاده از برنامهٔ روز دیگر» برای روزهای تعطیل کاربرد دارد؛ تغییرات آن روز از روز مرجع می‌آید.</li>
+      </ul>
+    </div>
+    <footer class="modal-foot">
+      <button class="btn btn-primary" type="button" data-close>بستن</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ───────────────────────────── about ───────────────────────────── -->
+<div class="modal" id="modal-about" hidden>
+  <div class="modal-card narrow" role="dialog" aria-modal="true" aria-labelledby="about-title">
+    <header class="modal-head">
+      <h2 id="about-title">درباره</h2>
+      <button class="icon-btn" type="button" data-close aria-label="بستن"><svg class="ico"><use href="#i-x"/></svg></button>
+    </header>
+    <div class="modal-body about">
+      <span class="about-mark"><svg><use href="#i-bell"/></svg></span>
+      <h3>نظام زنگ مدرسه</h3>
+      <p class="muted">برنامه‌ریز هفتگی زنگ مدرسه</p>
+      <dl class="about-grid">
+        <dt>نسخه</dt><dd id="about-version">—</dd>
+        <dt>موتور</dt><dd id="about-engine">—</dd>
+        <dt>سازنده</dt><dd>Dandelion System</dd>
+      </dl>
+      <p class="muted small">نرم‌افزار آزاد و رایگان برای مدارس. صدای زنگ را در زمان‌های تعیین‌شده به‌صورت خودکار پخش می‌کند.</p>
+    </div>
+    <footer class="modal-foot">
+      <button class="btn btn-ghost" id="btn-open-site" type="button">وب‌سایت سازنده</button>
+      <button class="btn btn-primary" type="button" data-close>باشه</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ───────────────────────────── confirm ───────────────────────────── -->
+<div class="modal" id="modal-confirm" hidden>
+  <div class="modal-card tiny" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+    <header class="modal-head">
+      <h2 id="confirm-title">تأیید</h2>
+    </header>
+    <div class="modal-body">
+      <p id="confirm-text">آیا مطمئن هستید؟</p>
+    </div>
+    <footer class="modal-foot">
+      <button class="btn btn-ghost" id="confirm-cancel" type="button">لغو</button>
+      <button class="btn btn-danger" id="confirm-ok" type="button">تأیید</button>
+    </footer>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="../shared/core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

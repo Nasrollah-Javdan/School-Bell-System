@@ -427,3 +427,16 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+## ---------------------------------------------------------------- School Bell System
+## Node / Electron
+node_modules/
+dist/
+out/
+*.log
+npm-debug.log*
+
+## OS junk
+Thumbs.db
+desktop.ini
+.DS_Store
