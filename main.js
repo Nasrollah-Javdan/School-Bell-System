@@ -36,6 +36,12 @@ const MAX_SOUND_BYTES = 40 * 1024 * 1024; // 40 MB per sound file
 const SOUND_PROTOCOL = "bellsound";
 
 const isDev = !app.isPackaged;
+
+// Windows launches the app with these arguments when it was registered as a
+// login item, so an autostart lands in the tray instead of showing a window.
+const LOGIN_ARGS = ["--hidden"];
+const startHidden = process.argv.includes("--hidden");
+
 let mainWindow = null;
 let tray = null;
 let isQuitting = false;
@@ -372,6 +378,34 @@ function quitApp() {
   app.quit();
 }
 
+// Register/unregister the autostart entry. The `--hidden` argument is what
+// makes a Windows login launch start minimised in the tray: `process.argv`
+// then contains it and `createWindow({ hidden: true })` keeps the window
+// invisible. Arguments are only set for packaged builds - in dev the argv is
+// `electron.exe <appPath>`, so extra args would corrupt the registry command.
+function applyLoginItem(enabled) {
+  const options = { openAtLogin: Boolean(enabled) };
+  if (app.isPackaged) {
+    options.args = enabled ? LOGIN_ARGS.slice() : [];
+    // Windows hides the window for a login launch by itself, but we still pass
+    // --hidden so behaviour is identical if it is ever launched by hand.
+    options.path = process.execPath;
+  }
+  app.setLoginItemSettings(options);
+}
+
+// Entries created by an older build have no `--hidden` argument, so they would
+// open a visible window on login. Re-apply the setting once at startup to heal
+// such installations (idempotent and cheap).
+function syncLoginItem() {
+  try {
+    if (!app.getLoginItemSettings().openAtLogin) return;
+    applyLoginItem(true);
+  } catch (err) {
+    log("login item sync failed:", err.message);
+  }
+}
+
 function createTray() {
   const icon = appIcon();
   if (!icon) return;
@@ -583,6 +617,7 @@ function registerIpc() {
     node: process.versions.node,
     platform: process.platform,
     isDev,
+    startHidden,
     paths: paths(),
     openAtLogin: app.getLoginItemSettings().openAtLogin,
   }));
@@ -714,7 +749,7 @@ function registerIpc() {
 
   ipcMain.handle("app:set-open-at-login", (_event, value) => {
     try {
-      app.setLoginItemSettings({ openAtLogin: Boolean(value) });
+      applyLoginItem(Boolean(value));
       return { ok: true, openAtLogin: app.getLoginItemSettings().openAtLogin };
     } catch (err) {
       return { ok: false, error: err.message };
@@ -771,7 +806,10 @@ if (!gotLock) {
     registerSoundProtocol();
     registerIpc();
     buildMenu();
-    createWindow();
+    syncLoginItem();
+    // An autostart launch must not steal focus: open straight into the tray.
+    createWindow({ hidden: startHidden });
+    if (startHidden) createTray();
     startWatchdog();
     // Keep the machine from suspending the app so timers stay accurate.
     try {
@@ -779,7 +817,7 @@ if (!gotLock) {
     } catch (err) {
       log("powerSaveBlocker failed:", err.message);
     }
-    if (app.getLoginItemSettings().openAtLogin) createTray();
+    if (app.getLoginItemSettings().openAtLogin && !tray) createTray();
 
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();

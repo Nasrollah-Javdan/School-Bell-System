@@ -918,7 +918,11 @@
       return;
     }
     if (state.info) state.info.openAtLogin = result.openAtLogin;
-    toast(result.openAtLogin ? "اجرای خودکار فعال شد." : "اجرای خودکار غیرفعال شد.");
+    toast(
+      result.openAtLogin
+        ? "اجرای خودکار فعال شد؛ دفعهٔ بعد برنامه کمینه در سینی سیستم بالا می‌آید."
+        : "اجرای خودکار غیرفعال شد."
+    );
   });
 
   $("btn-settings").addEventListener("click", () => {

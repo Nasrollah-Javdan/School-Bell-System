@@ -94,6 +94,11 @@ to `src/` (see [`docs/LEGACY-CSHARP.md`](docs/LEGACY-CSHARP.md)).
 - Invalid time input silently became `00:00`; such slots are now rejected.
 - Running the app twice played every bell twice.
 - Closing the window quit the app and stopped all bells.
+- "Start with Windows" registered a login item **without** the `--hidden`
+  argument, so Windows opened the full window on every boot instead of starting
+  minimised in the tray. The login item is now written with `--hidden` (packaged
+  builds only), `process.argv` is checked at startup, and existing entries are
+  re-applied once so older installations heal themselves.
 - Theme and volume were not persisted.
 - Modal promises were left pending when closed with Esc or the backdrop.
 - `.btn-danger` was styled identically to the primary button.

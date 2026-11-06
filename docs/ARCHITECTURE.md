@@ -72,6 +72,24 @@ focuses the existing window instead of starting a second scheduler (the original
 bug that produced double bells). `before-quit` clears the bell timer, the
 watchdog and the power-save blocker.
 
+Closing the window hides it to the tray rather than destroying it: the window is
+the audio host, so it must survive. `window-all-closed` recreates it hidden if
+it ever disappears. Quitting is only possible through the tray menu, the File
+menu or `Ctrl+Q` — and if the schedule is dirty, a modal confirmation runs
+first.
+
+### Autostart (start with Windows)
+`app.setLoginItemSettings()` writes the registry entry. In **packaged** builds it
+is written with `args: ["--hidden"]` and `path: process.execPath`; in dev the
+argv is `electron.exe <appPath>`, so extra arguments are deliberately omitted.
+At startup `process.argv.includes("--hidden")` decides whether the first window
+is created with `createWindow({ hidden: true })` — that is what makes a login
+launch land in the tray instead of popping a window in the user's face. A tray
+icon is created immediately in that case, and `syncLoginItem()` re-applies the
+entry once at boot so login items written by earlier builds (which lacked
+`--hidden`) start healing themselves. `app:info` exposes both `openAtLogin` and
+`startHidden` so the renderer can reflect the real state.
+
 ### Paths
 All mutable state lives under `app.getPath("userData")` — never in the install
 directory, which is read-only inside an asar archive:

@@ -32,7 +32,8 @@ handles the rest — offline, with no account and no telemetry.
 - **Safe saving** — settings are written atomically, with one automatic backup,
   into your user-data folder (never into the installation directory).
 - **Light / dark / system theme**, adjustable preview volume, optional
-  "start with Windows".
+  "start with Windows" — which launches minimised into the system tray, so bells
+  work from the moment the PC boots without a window popping up.
 - **Fully offline** — no CDN, no fonts or scripts loaded from the internet.
   A strict Content-Security-Policy is enforced in the renderer.
 - **Persian (RTL) interface**, with Persian digits and keyboard shortcuts.
