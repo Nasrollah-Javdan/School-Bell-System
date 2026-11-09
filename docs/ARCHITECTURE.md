@@ -1,7 +1,21 @@
 # Architecture
 
-School Bell System is an Electron 28 application. It was rewritten in v2.2 from
+School Bell System is an Electron 22 application. It was rewritten in v2.2 from
 a single-file C#/WinForms prototype into a small, layered Electron app.
+
+Electron 22.3.27 (Chromium 108, Node 16) is pinned deliberately: it is the last
+Electron release that still runs on Windows 7 / 8 / 8.1, and the code is written
+to that floor. Two consequences are baked in:
+
+- The main process uses the legacy `protocol.registerFileProtocol()` API, not
+  `protocol.handle()` / `net.fetch()`, which only exist from Electron 25.
+- No JavaScript or CSS newer than Chromium 108 is used (no `color-mix()`,
+  no logical-assignment operators, no `structuredClone`).
+
+On Windows 7/8/8.1 (`os.release()` = `6.1`/`6.2`/`6.3`) the app calls
+`app.disableHardwareAcceleration()` before `ready` — those systems only have
+WDDM 1.x GPU drivers where Chromium's GPU process often fails and paints a blank
+window.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -136,13 +150,17 @@ and ticks locally once a second; it never decides that a bell is due.
 Sounds are served through a privileged custom scheme rather than `file://`:
 
 ```js
-protocol.handle("bellsound", async (request) => {
+// Electron 22: protocol.handle()/net.fetch() do not exist yet (Electron 25+).
+protocol.registerFileProtocol("bellsound", (request, callback) => {
   // host must be "sound"; path is the decoded file name
   // core.isSafeSoundName() rejects traversal, separators, control chars
   // resolveSoundPath(): userData/sounds first, then bundled sound/
-  return net.fetch(pathToFileURL(file).toString());
+  callback({ path: file });      // Electron streams it from disk, with ranges
 });
 ```
+
+The scheme is registered as privileged (`standard`, `secure`, `supportFetchAPI`,
+`stream`) so `<audio>` can seek and `media-src bellsound:` is honoured by CSP.
 
 This avoids percent-encoding bugs with spaces and non-ASCII file names (a real
 bug in v2.1, which did `"file://" + dir + name`), and gives the renderer a single

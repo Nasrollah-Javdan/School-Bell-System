@@ -21,13 +21,12 @@ const {
   shell,
   nativeImage,
   protocol,
-  net,
   powerSaveBlocker,
 } = require("electron");
 const fs = require("fs");
 const fsp = require("fs/promises");
 const path = require("path");
-const { pathToFileURL } = require("url");
+const os = require("os");
 const core = require("./shared/core.js");
 
 const APP_NAME = "School Bell System";
@@ -41,6 +40,17 @@ const isDev = !app.isPackaged;
 // login item, so an autostart lands in the tray instead of showing a window.
 const LOGIN_ARGS = ["--hidden"];
 const startHidden = process.argv.includes("--hidden");
+
+// Windows 7 (kernel 6.1), 8.0 (6.2) and 8.1 (6.3) only have WDDM 1.x GPU
+// drivers and an ancient Direct3D stack. Chromium's GPU process regularly
+// fails there and paints a black/blank window, so those systems get software
+// rendering. The app only draws a schedule and plays audio, so this costs
+// nothing noticeable. This must run before `app.whenReady()`.
+const winKernel = process.platform === "win32" ? os.release() : "";
+const isLegacyWindows = /^6\.[123]($|\.)/.test(winKernel);
+if (isLegacyWindows) {
+  app.disableHardwareAcceleration();
+}
 
 let mainWindow = null;
 let tray = null;
@@ -476,16 +486,24 @@ function buildMenu() {
 // ---------------------------------------------------------------- protocol
 
 function registerSoundProtocol() {
-  protocol.handle(SOUND_PROTOCOL, async (request) => {
+  // `protocol.handle()` (and `net.fetch()`) only exist in Electron 25+. This
+  // legacy form works on every supported Electron, including the 22.x line
+  // that we pin for Windows 7 / 8 / 8.1 support. It streams straight from
+  // disk with byte-range support, which is what <audio> needs for seeking.
+  protocol.registerFileProtocol(SOUND_PROTOCOL, (request, callback) => {
     try {
       const url = new URL(request.url);
       const name = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
       const file = resolveSoundPath(name);
-      if (!file) return new Response("Not found", { status: 404 });
-      return net.fetch(pathToFileURL(file).toString());
+      if (!file) {
+        log("protocol: sound not found:", name);
+        callback({ error: -6 }); // net::ERR_FILE_NOT_FOUND
+        return;
+      }
+      callback({ path: file });
     } catch (err) {
       log("protocol error:", err.message);
-      return new Response("Bad request", { status: 400 });
+      callback({ error: -2 }); // net::ERR_FAILED
     }
   });
 }

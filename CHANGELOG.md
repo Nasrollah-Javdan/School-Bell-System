@@ -10,6 +10,33 @@ This project follows [Semantic Versioning](https://semver.org/).
 A full rewrite of the Electron application. The v2.1 C#/WinForms code is retired
 to `src/` (see [`docs/LEGACY-CSHARP.md`](docs/LEGACY-CSHARP.md)).
 
+### Windows 7 / 8 / 8.1 support
+
+- **Electron pinned to `22.3.27`.** Electron 22 is the last release line that
+  runs on Windows 7 SP1 / 8 / 8.1 (Chromium 108, Node 16). Electron 23+ requires
+  Windows 10.
+- **Replaced `protocol.handle()` + `net.fetch()` with
+  `protocol.registerFileProtocol()`.** The former only exist in Electron 25+.
+  The `bellsound://` scheme is still registered as privileged (`standard`,
+  `secure`, `supportFetchAPI`, `stream`), so `<audio>` seeking and the CSP
+  `media-src bellsound:` rule keep working.
+- **Software rendering on legacy Windows.** On kernel `6.1` / `6.2` / `6.3`
+  (Windows 7 / 8 / 8.1) the app calls `app.disableHardwareAcceleration()` before
+  `ready`, because those systems ship WDDM 1.x drivers where Chromium's GPU
+  process often fails and leaves a black window.
+- **No post-Chromium-108 JavaScript or CSS.** Audited `main.js`, `preload.js`,
+  `shared/core.js`, `renderer/app.js` and `renderer/styles.css`; no
+  `structuredClone`, `Array.prototype.at`, `Object.hasOwn`,
+  logical-assignment operators, `color-mix()`, `:has()` or `@container`.
+- **32-bit installer.** `npm run build:win` now builds the `nsis` target for
+  both `x64` and `ia32`, producing a **single** installer
+  (`SchoolBellSystem-Setup-<version>.exe`) whose payload is chosen at install
+  time — 32-bit Windows 7 SP1 machines are covered without a separate download.
+  `build:win64` / `build:win32` build one architecture only.
+- **README requirements rewritten**: Windows 7 SP1 + KB4474419 (SHA-2),
+  KB2999226 (UCRT) and KB2533623 are listed explicitly, and the XP note points
+  at the legacy C# build.
+
 ### Added
 
 - **Per-day inheritance.** Any day can be set to "like day *n*", so holidays and
@@ -77,8 +104,9 @@ to `src/` (see [`docs/LEGACY-CSHARP.md`](docs/LEGACY-CSHARP.md)).
 - **Version is now valid semver** (`2.2.0`; `"2.1"` was not).
 - **Build config fixed**: correct icon path, `src/` excluded from the package,
   NSIS installer with directory selection and desktop/start-menu shortcuts.
-- **README corrected**: Windows 10+ is required (Electron 28), the false Windows
-  XP claim is gone, and development/build instructions are documented.
+- **README corrected**: the false Windows XP claim is gone, and the real OS
+  floor (Windows 7 SP1 with the SHA-2 and UCRT updates) plus development/build
+  instructions are documented.
 
 ### Fixed
 

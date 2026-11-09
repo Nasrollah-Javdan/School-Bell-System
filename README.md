@@ -44,14 +44,38 @@ handles the rest — offline, with no account and no telemetry.
 
 | | |
 |---|---|
-| OS | Windows 10 or newer (64-bit). Windows 7/8 are not supported by Electron 28. |
+| OS | **Windows 7 SP1, 8, 8.1, 10 or 11** (64-bit; 32-bit Windows 7 SP1 also works, see below). |
 | Audio | Any output device; connect the line-out to your PA / amplifier. |
-| Disk | ~200 MB installed. |
+| Disk | ~250 MB installed. |
 | Internet | Not required at runtime. Only needed once to download the installer. |
 
-> The old **"supports Windows XP"** claim from v2.1 no longer applies. If you
-> really need XP, use the legacy C# build — see
+The app is built on **Electron 22.3.27** (Chromium 108). Electron 22 is the last
+release that still runs on Windows 7 / 8 / 8.1, which is why the version is
+pinned there.
+
+### Windows 7 SP1 checklist
+
+A stock Windows 7 SP1 that has been updated through Windows Update already
+satisfies all of these. On a fresh or offline install, apply them first — each
+link is a Microsoft KB:
+
+| Requirement | Why |
+|---|---|
+| **Service Pack 1** (KB976932) | Electron 22 requires SP1; plain Windows 7 RTM will not start. |
+| **KB4474419** — SHA-2 code signing support | Without it Windows cannot verify the installer's signature and setup fails to start. |
+| **KB2999226** — Universal C Runtime (UCRT) | Provides `api-ms-win-crt-*` DLLs that Chromium 108 links against. |
+| **KB2533623** (or SP1 + KB3063858) | `LoadLibraryEx` / `SetDefaultDllDirectories`, used by the Electron loader. |
+
+> 32-bit Windows 7 SP1 is supported as well: `npm run build:win` produces an
+> installer containing both the 64-bit and 32-bit payloads, and the right one is
+> chosen at install time. Windows XP is **not** supported by any Electron
+> release — for XP, use the legacy C# build in
 > [`docs/LEGACY-CSHARP.md`](docs/LEGACY-CSHARP.md).
+
+On Windows 7 / 8 / 8.1 the app disables GPU hardware acceleration on startup
+(`os.release()` is `6.1`, `6.2` or `6.3`). Those systems only ship WDDM 1.x
+drivers, where Chromium's GPU process frequently fails and leaves a black or
+blank window. Software rendering avoids that and costs nothing for a schedule UI.
 
 ---
 
@@ -103,7 +127,7 @@ with the same name as a bundled one, your file wins.
 ## Development
 
 ```bash
-# prerequisites: Node.js 18+ and npm
+# prerequisites: Node.js 18+ and npm (Windows 10/11, Linux or macOS)
 npm install          # installs Electron + electron-builder
 npm start            # run the app
 npm test             # run the unit tests (node --test, no Electron needed)
@@ -113,10 +137,25 @@ Set `BELL_DEVTOOLS=1` before `npm start` to open DevTools automatically.
 
 ### Building the installer
 
+> **Build on Windows 10/11, Linux or macOS — not on Windows 7.** Node.js 18+ and
+> electron-builder no longer run on Windows 7, but the *installer they produce*
+> runs fine on Windows 7 SP1. On Linux/macOS, building a Windows target also
+> needs [Wine](https://www.electron.build/multi-platform-build).
+
 ```bash
-npm run build:win    # NSIS installer -> dist/
-npm run dist         # same, never publishes
+npm run build:win      # one NSIS installer, both x64 and ia32   -> dist/
+npm run build:win64    # 64-bit only                           -> dist/
+npm run build:win32    # 32-bit only (old Win7 SP1 machines)   -> dist/
+npm run dist           # same as build:win, never publishes
 ```
+
+The resulting installer is `dist/SchoolBellSystem-Setup-<version>.exe`. When
+`--x64 --ia32` are passed together (the `build:win` script), electron-builder
+emits **one** installer that carries both payloads and picks the right one on
+the target machine, so you hand out a single file. It installs per-user by
+default, lets the user pick the directory, and creates desktop and Start-menu
+shortcuts. Windows 7/8/8.1 users see a SmartScreen warning because the build is
+not code-signed.
 
 The app icon is generated into `build/icon.ico` (multi-size) and
 `build/icon.png`. `electron-builder` picks them up from `build/` automatically.

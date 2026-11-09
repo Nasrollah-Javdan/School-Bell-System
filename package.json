@@ -9,13 +9,15 @@
     "dev": "electron .",
     "test": "node --test",
     "build": "electron-builder",
-    "build:win": "electron-builder --win",
-    "dist": "electron-builder --win --publish never"
+    "build:win": "electron-builder --win --x64 --ia32 --publish never",
+    "build:win64": "electron-builder --win --x64 --publish never",
+    "build:win32": "electron-builder --win --ia32 --publish never",
+    "dist": "electron-builder --win --x64 --ia32 --publish never"
   },
   "author": "Dandelion System",
   "license": "Freeware",
   "devDependencies": {
-    "electron": "^28.0.0",
+    "electron": "^22.3.27",
     "electron-builder": "^24.0.0"
   },
   "build": {
@@ -27,9 +29,10 @@
     },
     "win": {
       "target": [
-        "nsis"
+        { "target": "nsis" }
       ],
-      "icon": "build/icon.ico"
+      "icon": "build/icon.ico",
+      "artifactName": "SchoolBellSystem-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -51,6 +54,6 @@
     ]
   },
   "allowScripts": {
-    "electron@28.3.3": true
+    "electron@22.3.27": true
   }
 }
