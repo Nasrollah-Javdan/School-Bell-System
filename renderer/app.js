@@ -224,9 +224,10 @@
   }
 
   function settleConfirm(value) {
-    closeModal("modal-confirm");
+    // Take the resolver first: closeModal() would otherwise settle it with false.
     const resolve = confirmResolver;
     confirmResolver = null;
+    closeModal("modal-confirm");
     if (resolve) resolve(value);
   }
 
@@ -304,10 +305,14 @@
     }
     stopAudio();
     const audio = new Audio(url);
-    audio.volume = Math.min(1, Math.max(0, Number(volume)));
+    const safeVolume = Number.isFinite(Number(volume)) ? Number(volume) : 0.9;
+    audio.volume = Math.min(1, Math.max(0, safeVolume));
     currentAudio = audio;
     audio.addEventListener("ended", () => {
-      if (currentAudio === audio) currentAudio = null;
+      if (currentAudio === audio) {
+        currentAudio = null;
+        renderTable();
+      }
     });
     try {
       await audio.play();
@@ -426,6 +431,10 @@
         }
         slot.hour = parsed.hour;
         slot.minute = parsed.minute;
+        const ownerDay = state.days[state.currentDay];
+        if (ownerDay && ownerDay.slots.indexOf(slot) !== -1) {
+          ownerDay.slots = core.sortSlots(ownerDay.slots);
+        }
         markDirty();
         renderTable();
         renderDayList();
@@ -839,9 +848,10 @@
   }
 
   function settleSoundPick(name) {
-    closeModal("modal-sound");
+    // Take the resolver first: closeModal() would otherwise settle it with null.
     const resolve = soundPickResolver;
     soundPickResolver = null;
+    closeModal("modal-sound");
     if (resolve) resolve(name);
   }
 
@@ -909,6 +919,32 @@
     if (currentAudio) currentAudio.volume = state.ui.volume;
     persistUi();
   });
+
+  $("volume").addEventListener("change", () => {
+    if (currentAudio) return;
+    testBell();
+  });
+
+  function testBell() {
+    if (currentAudio) {
+      stopAudio();
+      renderTable();
+      return;
+    }
+    const slots = resolvedDay(state.currentDay).slots || [];
+    let slot = slots.find((s) => s.soundfile);
+    if (!slot) {
+      for (let d = 1; d <= 7 && !slot; d++) {
+        slot = (resolvedDay(d).slots || []).find((s) => s.soundfile);
+      }
+    }
+    if (!slot) {
+      toast("هیچ نوبتی با صدا برای تست وجود ندارد.", "warn");
+      return;
+    }
+    playSound(slot.soundfile, state.ui.volume);
+  }
+  $("btn-test-bell").addEventListener("click", testBell);
 
   $("open-at-login").addEventListener("change", async (event) => {
     const result = await api.setOpenAtLogin(event.target.checked);
@@ -1003,6 +1039,7 @@
       return;
     }
     if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+    if (modalStack.length > 0) return;
     if (key === "s") {
       event.preventDefault();
       if (event.shiftKey) saveAs();

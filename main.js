@@ -174,9 +174,10 @@ async function saveSettings(days, ui, target) {
   const payload = core.buildSettings(days, ui);
   const text = JSON.stringify(payload, null, 2) + "\n";
 
-  // keep one backup of the previous good file
+  // keep one backup of the previous good file (never replace it with a corrupt one)
   try {
-    await fsp.copyFile(p.settings, p.backup);
+    const current = await readTextFile(p.settings, MAX_SETTINGS_BYTES);
+    if (!core.parseSettingsPayload(current).error) await fsp.copyFile(p.settings, p.backup);
   } catch (err) {
     if (err.code !== "ENOENT") log("backup failed:", err.message);
   }
@@ -660,6 +661,7 @@ function registerIpc() {
       return { ok: true, ...result };
     } catch (err) {
       log("save failed:", err.message);
+      pendingCloseAfterSave = false;
       return { ok: false, error: err.message };
     }
   });

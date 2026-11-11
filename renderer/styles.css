@@ -23,11 +23,11 @@
   --border: #dfe4ef;
   --border-strong: #c8d0e2;
 
-  --brand: #4f46e5;
-  --brand-hover: #4338ca;
-  --brand-soft: #eef0ff;
+  --brand: #3f51b5;
+  --brand-hover: #303f9f;
+  --brand-soft: #e8eaf6;
   --brand-text: #ffffff;
-  --brand-rgb: 79, 70, 229;
+  --brand-rgb: 63, 81, 181;
 
   --danger: #dc2626;
   --danger-hover: #b91c1c;
@@ -40,13 +40,13 @@
   --ok: #15803d;
   --ok-soft: #dcfce7;
 
-  --shadow-sm: 0 1px 2px rgba(16, 24, 40, .06);
-  --shadow-md: 0 4px 16px rgba(16, 24, 40, .10);
-  --shadow-lg: 0 24px 64px rgba(16, 24, 40, .24);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .12), 0 1px 3px 1px rgba(0, 0, 0, .08);
+  --shadow-md: 0 2px 6px 2px rgba(0, 0, 0, .10), 0 1px 2px rgba(0, 0, 0, .16);
+  --shadow-lg: 0 8px 12px 6px rgba(0, 0, 0, .12), 0 4px 4px rgba(0, 0, 0, .20);
 
   --radius-sm: 8px;
   --radius: 12px;
-  --radius-lg: 18px;
+  --radius-lg: 20px;
 
   --sidebar-w: 268px;
   --topbar-h: 84px;
@@ -68,11 +68,11 @@
   --border: #26314b;
   --border-strong: #35415f;
 
-  --brand: #7c74ff;
-  --brand-hover: #8f88ff;
+  --brand: #8c9eff;
+  --brand-hover: #a3b1ff;
   --brand-soft: #232a4d;
   --brand-text: #0e1220;
-  --brand-rgb: 124, 116, 255;
+  --brand-rgb: 140, 158, 255;
 
   --danger: #f87171;
   --danger-hover: #fca5a5;
@@ -164,7 +164,7 @@ code, kbd, .mono { font-family: var(--mono); }
   place-items: center;
   width: 40px; height: 40px;
   border-radius: 12px;
-  background: linear-gradient(140deg, var(--brand), #8b5cf6);
+  background: linear-gradient(140deg, var(--brand), #5c6bc0);
   color: #fff;
   box-shadow: var(--shadow-sm);
 }
@@ -717,10 +717,10 @@ code, kbd, .mono { font-family: var(--mono); }
   background: #fff;
   box-shadow: var(--shadow-sm);
   transition: transform .18s;
-  transform: translateX(-18px);
+  transform: translateX(0);
 }
 .switch input:checked + .switch-track { background: var(--brand); }
-.switch input:checked + .switch-track::after { transform: translateX(0); }
+.switch input:checked + .switch-track::after { transform: translateX(-18px); }
 .switch input:focus-visible + .switch-track { outline: 2px solid var(--brand); outline-offset: 2px; }
 
 /* ------------------------------------------------------------------ prose */
@@ -756,7 +756,7 @@ kbd {
   place-items: center;
   width: 60px; height: 60px;
   border-radius: 18px;
-  background: linear-gradient(140deg, var(--brand), #8b5cf6);
+  background: linear-gradient(140deg, var(--brand), #5c6bc0);
   color: #fff;
 }
 .about-mark svg { width: 30px; height: 30px; }
