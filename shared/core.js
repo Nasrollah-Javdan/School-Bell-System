@@ -122,7 +122,9 @@
     minute = Math.trunc(minute);
     if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
     const soundfile = typeof raw.soundfile === "string" ? raw.soundfile.trim() : "";
-    return { hour, minute, soundfile: isSafeSoundName(soundfile) ? soundfile : "" };
+    const out = { hour, minute, soundfile: isSafeSoundName(soundfile) ? soundfile : "" };
+    if (raw.music === true) out.music = true;
+    return out;
   }
 
   function normalizeDayType(type, selfIndex) {
@@ -379,9 +381,16 @@
     if (!Number.isFinite(volume)) volume = 0.9;
     volume = Math.min(1, Math.max(0, volume));
     const lastDay = Number(ui.lastDay);
+    const m = ui.music && typeof ui.music === "object" ? ui.music : {};
+    const music = {
+      enabled: m.enabled === true,
+      shuffle: m.shuffle !== false,
+      files: (Array.isArray(m.files) ? m.files : []).filter((f) => typeof f === "string" && isSafeSoundName(f)),
+    };
     return {
       theme,
       volume,
+      music,
       lastDay: Number.isInteger(lastDay) && lastDay >= 1 && lastDay <= NUM_DAYS ? lastDay : 1,
     };
   }

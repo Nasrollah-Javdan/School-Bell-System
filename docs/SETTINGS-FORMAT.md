@@ -35,7 +35,8 @@ Stored at `%APPDATA%\School Bell System\settings.json`.
   "ui": {
     "theme": "system",
     "volume": 0.9,
-    "lastDay": 1
+    "lastDay": 1,
+    "music": { "enabled": false, "shuffle": true, "files": [] }
   }
 }
 ```
@@ -207,3 +208,8 @@ serializeLegacyText(days, ui?) // → string
 normalizeDays(input)       // → days (always 7 complete days)
 normalizeUi(input)         // → { theme, volume, lastDay }
 ```
+
+
+### Music after bells
+
+A slot may carry `"music": true`; after that bell, files from `ui.music.files` play and fade out ~5 s before the next bell.

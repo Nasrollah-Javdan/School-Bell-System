@@ -107,6 +107,16 @@
       </div>
 
       <div class="table-wrap">
+        <details class="music-panel" id="music-panel">
+          <summary>🎵 موسیقی بعد از زنگ تفریح</summary>
+          <label><input type="checkbox" id="music-enabled"> فعال</label>
+          <label><input type="checkbox" id="music-shuffle"> پخش تصادفی</label>
+          <label for="music-files">فهرست موسیقی (چند مورد با Ctrl):</label>
+          <select id="music-files" multiple size="5"></select>
+          <p class="hint">موسیقی فقط بعد از نوبت‌هایی پخش می‌شود که تیک «موسیقی» دارند، و ۵ ثانیه قبل از زنگ بعدی با کم‌شدن تدریجی قطع می‌شود.</p>
+          <button class="btn" id="music-stop" type="button">توقف موسیقی</button>
+        </details>
+
         <table class="schedule" id="schedule-table">
           <thead>
             <tr>

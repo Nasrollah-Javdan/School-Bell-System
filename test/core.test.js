@@ -181,10 +181,12 @@ test("normalizeDays accepts the array form and junk input", () => {
 });
 
 test("normalizeUi clamps and defaults", () => {
-  assert.deepEqual(core.normalizeUi(null), { theme: "system", volume: 0.9, lastDay: 1 });
+  const music = { enabled: false, shuffle: true, files: [] };
+  assert.deepEqual(core.normalizeUi(null), { theme: "system", volume: 0.9, music, lastDay: 1 });
   assert.deepEqual(core.normalizeUi({ theme: "dark", volume: 2, lastDay: 9 }), {
     theme: "dark",
     volume: 1,
+    music,
     lastDay: 1,
   });
   assert.equal(core.normalizeUi({ theme: "neon" }).theme, "system");

@@ -462,7 +462,7 @@ code, kbd, .mono { font-family: var(--mono); }
 }
 .schedule tbody tr:last-child td { border-bottom: 0; }
 
-.schedule input[type="time"] {
+.schedule input.time-input {
   width: 118px;
   height: 34px;
   padding: 0 8px;
@@ -475,8 +475,8 @@ code, kbd, .mono { font-family: var(--mono); }
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
-.schedule input[type="time"]:hover { border-color: var(--brand); }
-.schedule input[type="time"]:focus {
+.schedule input.time-input:hover { border-color: var(--brand); }
+.schedule input.time-input:focus {
   outline: none;
   border-color: var(--brand);
   box-shadow: 0 0 0 3px rgba(var(--brand-rgb), .22);
@@ -841,3 +841,9 @@ kbd {
   .app { display: block; height: auto; }
   .table-wrap { border: 0; overflow: visible; }
 }
+
+.music-panel{margin:8px 0 12px;padding:8px 12px;border:1px solid var(--border,#ccc);border-radius:8px}
+.music-panel summary{cursor:pointer;font-weight:600}
+.music-panel label{display:block;margin:6px 0}
+.music-panel select{width:100%}
+.music-chk{display:flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap}

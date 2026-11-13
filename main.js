@@ -410,6 +410,14 @@ function applyLoginItem(enabled) {
 // such installations (idempotent and cheap).
 function syncLoginItem() {
   try {
+    // First run after install: autostart is ON by default. The marker file
+    // makes sure we only force it once, so a later user opt-out is respected.
+    const marker = path.join(app.getPath("userData"), ".autostart-initialized");
+    if (!fs.existsSync(marker)) {
+      applyLoginItem(true);
+      try { fs.writeFileSync(marker, "1"); } catch (_) {}
+      return;
+    }
     if (!app.getLoginItemSettings().openAtLogin) return;
     applyLoginItem(true);
   } catch (err) {

@@ -47,7 +47,7 @@
       "preload.js",
       "renderer/**",
       "shared/**",
-      "sound/**",
+      { "from": "src/SchoolBell/sound", "to": "sound", "filter": ["**/*.mp3","**/*.wav","**/*.ogg"] },
       "build/icon.png",
       "!**/*.map",
       "!**/{.git,.github,test,docs,src,wiki}/**"

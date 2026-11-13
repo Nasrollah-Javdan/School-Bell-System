@@ -417,13 +417,34 @@
       // --- time
       const timeCell = el("td", { class: "col-time" });
       const timeInput = el("input", {
-        type: "time",
+        type: "text",
+        class: "time-input",
+        inputmode: "numeric",
+        maxlength: "5",
+        dir: "ltr",
+        placeholder: "HH:MM",
+        autocomplete: "off",
         value: timeText,
         disabled: inherited,
         "aria-label": "ساعت زنگ " + fa(index + 1),
       });
+      timeInput.addEventListener("focus", () => timeInput.select());
+      timeInput.addEventListener("input", () => {
+        // 24-hour entry: digits only, colon inserted automatically (1230 -> 12:30)
+        const d = timeInput.value
+          .replace(/[\u06F0-\u06F9]/g, (c) => String(c.charCodeAt(0) - 0x06F0))
+          .replace(/[\u0660-\u0669]/g, (c) => String(c.charCodeAt(0) - 0x0660))
+          .replace(/\D/g, "")
+          .slice(0, 4);
+        timeInput.value = d.length > 2 ? d.slice(0, 2) + ":" + d.slice(2) : d;
+      });
+      timeInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") timeInput.blur();
+      });
       timeInput.addEventListener("change", () => {
-        const parsed = core.parseTime(timeInput.value);
+        let raw = timeInput.value.trim();
+        if (/^\d{3,4}$/.test(raw)) raw = raw.slice(0, -2) + ":" + raw.slice(-2);
+        const parsed = core.parseTime(raw);
         if (!parsed) {
           timeInput.value = timeText;
           toast("ساعت نامعتبر است. قالب درست: ۰۷:۳۰", "error");
@@ -487,6 +508,16 @@
         },
       });
       wrap.appendChild(preview);
+      const musicChk = el("input", { type: "checkbox", disabled: inherited });
+      musicChk.checked = !!slot.music;
+      musicChk.addEventListener("change", () => {
+        if (musicChk.checked) slot.music = true;
+        else delete slot.music;
+        markDirty();
+      });
+      wrap.appendChild(
+        el("label", { class: "music-chk", title: "پخش موسیقی بعد از این زنگ" }, [musicChk, document.createTextNode("🎵 موسیقی")])
+      );
       wrap.appendChild(
         el("button", {
           type: "button",
@@ -665,7 +696,7 @@
     const rows = $("schedule-body").querySelectorAll("tr");
     const target = rows[rows.length - 1];
     if (target) {
-      const input = target.querySelector('input[type="time"]');
+      const input = target.querySelector("input.time-input");
       if (input) input.focus();
     }
   }
@@ -882,6 +913,7 @@
   // ------------------------------------------------------------------ settings UI
 
   function syncSettingsUi() {
+    initMusicPanel();
     $("volume").value = String(Math.round(state.ui.volume * 100));
     $("volume-value").textContent = fa(Math.round(state.ui.volume * 100)) + "٪";
     $("open-at-login").checked = Boolean(state.info && state.info.openAtLogin);
@@ -1060,9 +1092,124 @@
 
   // ------------------------------------------------------------------ bell playback
 
+  // ------------------------------------------------------------------ music after bell
+
+  const FADE_MS = 5000;
+  const MAX_MUSIC_MS = 10 * 60 * 1000;
+  let musicAudio = null;
+  let musicToken = 0;
+  let musicTimers = [];
+
+  function stopMusic() {
+    musicToken++;
+    musicTimers.forEach(clearTimeout);
+    musicTimers = [];
+    if (musicAudio) {
+      try {
+        musicAudio.pause();
+      } catch {
+        /* ignore */
+      }
+      musicAudio = null;
+    }
+  }
+
+  function fadeOutMusic(token) {
+    const audio = musicAudio;
+    if (!audio || token !== musicToken) return;
+    const start = audio.volume;
+    const steps = 20;
+    let n = 0;
+    const iv = setInterval(() => {
+      n++;
+      if (token !== musicToken || n >= steps) {
+        clearInterval(iv);
+        if (token === musicToken) stopMusic();
+        return;
+      }
+      audio.volume = Math.max(0, start * (1 - n / steps));
+    }, FADE_MS / steps);
+  }
+
+  async function startMusic(bellAt, bellAudio) {
+    const cfg = state.ui.music;
+    if (!cfg || !cfg.enabled) return;
+    const files = cfg.files.filter((f) => soundNames().indexOf(f) !== -1);
+    if (!files.length) return;
+    stopMusic();
+    const token = musicToken;
+    // wait for the bell to finish
+    if (bellAudio && !bellAudio.paused && !bellAudio.ended) {
+      await new Promise((resolve) => {
+        bellAudio.addEventListener("ended", resolve, { once: true });
+        bellAudio.addEventListener("pause", resolve, { once: true });
+      });
+    }
+    if (token !== musicToken) return;
+    // end time: next scheduled bell minus fade, otherwise a 10 minute cap
+    const next = core.findNextBell(state.days, new Date());
+    let stopIn = MAX_MUSIC_MS;
+    if (next) stopIn = Math.min(stopIn, next.at.getTime() - Date.now() - FADE_MS);
+    if (stopIn < 3000) return;
+    musicTimers.push(setTimeout(() => fadeOutMusic(token), stopIn));
+    let order = [];
+    const playNext = async () => {
+      if (token !== musicToken) return;
+      if (!order.length) {
+        order = files.slice();
+        if (cfg.shuffle) order.sort(() => Math.random() - 0.5);
+      }
+      const url = await getSoundUrl(order.shift());
+      if (token !== musicToken) return;
+      if (!url) return playNext();
+      const audio = new Audio(url);
+      audio.volume = state.ui.volume;
+      musicAudio = audio;
+      audio.addEventListener("ended", playNext);
+      audio.addEventListener("error", () => setTimeout(playNext, 1000));
+      try {
+        await audio.play();
+      } catch {
+        /* ignore */
+      }
+    };
+    playNext();
+  }
+
+  function initMusicPanel() {
+    const cfg = state.ui.music;
+    $("music-enabled").checked = cfg.enabled;
+    $("music-shuffle").checked = cfg.shuffle;
+    const sel = $("music-files");
+    sel.textContent = "";
+    soundNames().forEach((name) => {
+      const o = el("option", { value: name }, [document.createTextNode(name)]);
+      o.selected = cfg.files.indexOf(name) !== -1;
+      sel.appendChild(o);
+    });
+    const save = () => {
+      cfg.enabled = $("music-enabled").checked;
+      cfg.shuffle = $("music-shuffle").checked;
+      cfg.files = Array.from(sel.selectedOptions).map((o) => o.value);
+      markDirty();
+    };
+    $("music-enabled").onchange = save;
+    $("music-shuffle").onchange = save;
+    sel.onchange = save;
+    $("music-stop").onclick = stopMusic;
+    $("music-panel").ontoggle = () => { if ($("music-panel").open) initMusicPanel(); };
+  }
+
   api.onPlayBell(async (payload) => {
     if (!payload || !payload.soundfile) return;
+    stopMusic();
     await playSound(payload.soundfile, payload.volume != null ? payload.volume : state.ui.volume);
+    {
+      const when = payload.at ? new Date(payload.at) : new Date();
+      const day = core.resolveDay(state.days, core.dayIndexFromDate(when));
+      const slot = day.slots.find((x) => x.hour === when.getHours() && x.minute === when.getMinutes());
+      if (slot && slot.music) startMusic(when, currentAudio);
+    }
     const at = payload.at ? new Date(payload.at) : new Date();
     toast("زنگ " + fa(core.formatTime(at.getHours(), at.getMinutes())) + " در حال پخش — برای توقف کلیک کنید", null, {
       duration: 8000,
